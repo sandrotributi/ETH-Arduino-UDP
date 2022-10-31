@@ -6,15 +6,32 @@ byte mac[] = {
   0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED
 };
 
+char packetBuffer[UDP_TX_PACKET_MAX_SIZE];
+String datReq;
+int packetSize;
+
+const byte pinRed = 7;
+const byte pinGreen = 8;
+const byte pinBlue = 9;
+
+byte statusRed = LOW;
+byte statusGreen = LOW;
+byte statusBlue = LOW;
+
 unsigned int localPort = 5000;
 // dichiarazione di un oggetto UDP
 EthernetUDP udp;
 
 void setup() {
   Serial.begin(9600);
+  pinMode(pinRed, OUTPUT);
+  pinMode(pinGreen, OUTPUT);
+  pinMode(pinBlue, OUTPUT);
+
   while (!Serial) {
     ; // attendere la connessione della porta seriale. Necessario solo per la porta USB nativa.
   }
+
   Ethernet.init(10);
   // inizializazione Ethernet
   if (Ethernet.begin(mac) == 0) {
@@ -59,40 +76,54 @@ void setup() {
   delay(1500);
 }
 
-char packetBuffer[UDP_TX_PACKET_MAX_SIZE];
-// String datReq;
-int packetSize;
-
-const byte pinRed = 2;
-const byte pinGreen = 3;
-const byte pinBlue = 4;
-
-byte statusRed = LOW;
-byte statusGreen = LOW;
-byte statusBlue = LOW;
-
 void loop() {
   // lettura dimensione pacchetto UDP
   packetSize = udp.parsePacket();
   if (packetSize > 0) { // controllo richiesta UDP
     udp.read(packetBuffer, UDP_TX_PACKET_MAX_SIZE); // lettura dati UDP
     String datReq(packetBuffer);
+    Serial.println(datReq);
 
     if (datReq == "red") {
-      udp.beginPacket(udp.remoteIP(), udp.remotePort());
-      udp.print("E' stato richiesto: red");
-      udp.endPacket();
+      sendUdpData(datReq);
+      statusRed = ledChangeStatus(pinRed, statusRed);
     }
     if (datReq == "green") {
-      udp.beginPacket(udp.remoteIP(), udp.remotePort());
-      udp.print("E' stato richiesto: green");
-      udp.endPacket();
+      sendUdpData(datReq);
+      statusGreen = ledChangeStatus(pinGreen, statusGreen);
     }
     if (datReq == "blue") {
-      udp.beginPacket(udp.remoteIP(), udp.remotePort());
-      udp.print("E' stato richiesto: blue");
-      udp.endPacket();
+      sendUdpData(datReq);
+      statusBlue = ledChangeStatus(pinBlue, statusBlue);
+    }
+    if (datReq == "off") {
+      sendUdpData(datReq);
+      allLedOnOff(LOW);
+      statusRed = statusGreen = statusBlue = LOW;
+    }
+    if (datReq == "on") {
+      sendUdpData(datReq);
+      allLedOnOff(HIGH);
+      statusRed = statusGreen = statusBlue = HIGH;      
     }
   }
   memset(packetBuffer, 0, UDP_TX_PACKET_MAX_SIZE);
+}
+
+void sendUdpData(String str) {
+  udp.beginPacket(udp.remoteIP(), udp.remotePort());
+  udp.print(str);
+  udp.endPacket();  
+}
+
+void allLedOnOff(byte status) {
+  digitalWrite(pinRed, status);
+  digitalWrite(pinGreen, status);
+  digitalWrite(pinBlue, status);
+}
+
+byte ledChangeStatus(byte pin, byte status) {
+  status = !status;
+  digitalWrite(pin, status);
+  return status;
 }
