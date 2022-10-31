@@ -1,3 +1,14 @@
+/*
+ * Arduino & Ethernet Shield
+ * In questo esempio utilizzerai la Ethernet Shield e la scheda Arduino per inviare e ricevere stringhe di testo tramite
+ * il protocollo UDP (Universal Datagram Protocol). Avrai bisogno di un altro dispositivo cui inviare o ricevere.
+ * Allegato a questo sketch c'è un programma Python che fa da client: invia stringhe di testo a Arduino attraverso una
+ * rete locale utilizzando il protocollo UDP.
+ * 
+ * ETH-Arduino-UDP vers. 1.00 del 31/10/2022
+ * Autore: Sandro Tributi
+ */
+
 #include <SPI.h>
 #include <Ethernet.h>
 #include <EthernetUdp.h>
