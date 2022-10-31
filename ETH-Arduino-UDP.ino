@@ -2,26 +2,27 @@
 #include <Ethernet.h>
 #include <EthernetUdp.h>
 #include <DHT.h>
-
-#define DHTTYPE DHT11
-
+// modello sensore di temperatura
+#define DHTTYPE DHT11 
+// assegna un indirizzo MAC
 byte mac[] = {
   0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED
 };
-
+// buffer per l'elaborazione del pacchetto UDP
 char packetBuffer[UDP_TX_PACKET_MAX_SIZE];
-String datReq;
-int packetSize;
+String datReq;  // stringa contenente i dati
+int packetSize; // dimensione pacchetto UDP
 
+// assegnazione dei pin
 const byte dhtPin = 2;
 const byte pinRed = 7;
 const byte pinGreen = 8;
 const byte pinBlue = 9;
-
+// stato dei led (on/off)
 byte statusRed = LOW;
 byte statusGreen = LOW;
 byte statusBlue = LOW;
-
+// porta UDP locale
 unsigned int localPort = 5000;
 // dichiarazione di un oggetto UDP
 EthernetUDP udp;
@@ -77,7 +78,7 @@ void setup() {
   // visualizza IP DNS server
   Serial.print("DNS: ");
   Serial.println(Ethernet.dnsServerIP());
-  // inizializzazione dht
+  // inizializzazione sensore temperatura
   dht.begin();  
   // inizializzazione UDP
   udp.begin(localPort);
@@ -89,9 +90,10 @@ void loop() {
   packetSize = udp.parsePacket();
   if (packetSize > 0) { // controllo richiesta UDP
     udp.read(packetBuffer, UDP_TX_PACKET_MAX_SIZE); // lettura dati UDP
-    String datReq(packetBuffer);
+    String datReq(packetBuffer);  // converte array di byte in stringa
     Serial.println(datReq);
 
+    // elaborazione dei comandi
     if (datReq == "red") {
       sendUdpData(datReq);
       statusRed = ledChangeStatus(pinRed, statusRed);
