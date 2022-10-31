@@ -1,6 +1,9 @@
 #include <SPI.h>
 #include <Ethernet.h>
 #include <EthernetUdp.h>
+#include <DHT.h>
+
+#define DHTTYPE DHT11
 
 byte mac[] = {
   0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED
@@ -10,6 +13,7 @@ char packetBuffer[UDP_TX_PACKET_MAX_SIZE];
 String datReq;
 int packetSize;
 
+const byte dhtPin = 2;
 const byte pinRed = 7;
 const byte pinGreen = 8;
 const byte pinBlue = 9;
@@ -21,6 +25,8 @@ byte statusBlue = LOW;
 unsigned int localPort = 5000;
 // dichiarazione di un oggetto UDP
 EthernetUDP udp;
+// dichiarazione oggetto dht (sensore temperatura)
+DHT dht(dhtPin, DHTTYPE);
 
 void setup() {
   Serial.begin(9600);
@@ -45,7 +51,7 @@ void setup() {
     // non ha senso andare avanti, quindi non fare nulla per sempre:
     while (true) {
       delay(1);
-    }
+    }    
   }
 
   // visualizza indirizzo MAC
@@ -71,6 +77,8 @@ void setup() {
   // visualizza IP DNS server
   Serial.print("DNS: ");
   Serial.println(Ethernet.dnsServerIP());
+  // inizializzazione dht
+  dht.begin();  
   // inizializzazione UDP
   udp.begin(localPort);
   delay(1500);
@@ -105,6 +113,16 @@ void loop() {
       sendUdpData(datReq);
       allLedOnOff(HIGH);
       statusRed = statusGreen = statusBlue = HIGH;      
+    }
+    if (datReq == "temp") {
+      float t = dht.readTemperature();
+      String strtmp = String(t, 2);
+      sendUdpData(strtmp);
+    }
+    if (datReq == "hum") {
+      float h = dht.readHumidity();
+      String strtmp = String(h, 2);
+      sendUdpData(strtmp);
     }
   }
   memset(packetBuffer, 0, UDP_TX_PACKET_MAX_SIZE);
