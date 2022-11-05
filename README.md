@@ -1,3 +1,3 @@
 # ETH-Arduino-UDP
  
-### UDP server on Arduino board with Ethernet Shield
+### UDP server on Arduino Uno board with Ethernet Shield
